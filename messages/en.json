@@ -1,0 +1,108 @@
+{
+  "common": {
+    "appName": "QuieroBCN",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "required": "Required field",
+    "error": "An error occurred. Please try again.",
+    "success": "Changes saved successfully."
+  },
+  "auth": {
+    "login": "Sign in",
+    "logout": "Sign out",
+    "register": "Create account",
+    "email": "Email address",
+    "password": "Password",
+    "forgotPassword": "Forgot your password?",
+    "noAccount": "Don't have an account?",
+    "alreadyAccount": "Already have an account?",
+    "loginError": "Incorrect email or password.",
+    "emailConfirmation": "Check your email to confirm your account."
+  },
+  "registro": {
+    "title": "Create your profile",
+    "subtitle": "Tell us about yourself so we can find your ideal apartment in Barcelona.",
+    "fullName": "Full name",
+    "phone": "Phone",
+    "profileType": "Profile type",
+    "profileTypes": {
+      "empleado": "Employee",
+      "estudiante": "Student",
+      "autonomo": "Self-employed",
+      "otro": "Other / Foreigner"
+    },
+    "monthlyIncome": "Net monthly income (€)",
+    "preferences": "Housing preferences",
+    "maxRent": "Maximum monthly budget (€)",
+    "minRooms": "Minimum bedrooms",
+    "neighborhoods": "Preferred neighborhoods",
+    "moveInDate": "Desired move-in date",
+    "hasPets": "I have pets",
+    "submit": "Create my profile",
+    "success": "Profile created! Check your email to confirm your account."
+  },
+  "client": {
+    "profile": "My profile",
+    "documents": "My documents",
+    "visits": "My visits",
+    "status": {
+      "unverified": "Pending verification",
+      "uploading": "Uploading documents",
+      "pending_review": "Under review",
+      "active": "Active",
+      "inactive": "Inactive"
+    }
+  },
+  "documents": {
+    "upload": "Upload document",
+    "uploaded": "Document uploaded",
+    "replace": "Replace",
+    "required": "Required",
+    "optional": "Optional",
+    "allUploaded": "All documents uploaded. Your profile is ready for review!",
+    "pendingDocs": "Pending documents"
+  },
+  "admin": {
+    "dashboard": "Admin dashboard",
+    "clients": "Clients",
+    "buildings": "Buildings",
+    "matches": "Matches",
+    "activate": "Activate profile",
+    "deactivate": "Deactivate profile",
+    "exportDocs": "Export documents (ZIP)",
+    "matchAndNotify": "Match & notify",
+    "newBuilding": "Add building",
+    "publishBuilding": "Publish building",
+    "filterActive": "Active only",
+    "filterPending": "Pending review"
+  },
+  "building": {
+    "price": "Price",
+    "rooms": "Bedrooms",
+    "bathrooms": "Bathrooms",
+    "size": "Size",
+    "floor": "Floor",
+    "elevator": "Elevator",
+    "furnished": "Furnished",
+    "neighborhood": "Neighborhood",
+    "availableFrom": "Available from",
+    "bookVisit": "Book a visit",
+    "selectSlot": "Select a time slot",
+    "slotBooked": "You already have a visit booked for this building.",
+    "noSlots": "No time slots available at the moment."
+  },
+  "visit": {
+    "confirmTitle": "Confirm your visit",
+    "confirmText": "You are booking a visit for {datetime}. Confirm?",
+    "confirmed": "Visit confirmed! We have sent you a confirmation email.",
+    "yourVisits": "Your scheduled visits",
+    "noVisits": "You have no scheduled visits."
+  }
+}

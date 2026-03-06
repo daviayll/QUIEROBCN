@@ -1,0 +1,108 @@
+{
+  "common": {
+    "appName": "QuieroBCN",
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "back": "Volver",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No",
+    "required": "Campo obligatorio",
+    "error": "Ha ocurrido un error. Inténtalo de nuevo.",
+    "success": "Cambios guardados correctamente."
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "logout": "Cerrar sesión",
+    "register": "Crear cuenta",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "noAccount": "¿No tienes cuenta?",
+    "alreadyAccount": "¿Ya tienes cuenta?",
+    "loginError": "Email o contraseña incorrectos.",
+    "emailConfirmation": "Revisa tu correo para confirmar tu cuenta."
+  },
+  "registro": {
+    "title": "Crea tu perfil",
+    "subtitle": "Cuéntanos quién eres para encontrar tu piso ideal en Barcelona.",
+    "fullName": "Nombre completo",
+    "phone": "Teléfono",
+    "profileType": "Tipo de perfil",
+    "profileTypes": {
+      "empleado": "Empleado/a",
+      "estudiante": "Estudiante",
+      "autonomo": "Autónomo/a",
+      "otro": "Otro / Extranjero"
+    },
+    "monthlyIncome": "Ingresos mensuales netos (€)",
+    "preferences": "Preferencias de vivienda",
+    "maxRent": "Presupuesto máximo mensual (€)",
+    "minRooms": "Habitaciones mínimas",
+    "neighborhoods": "Barrios preferidos",
+    "moveInDate": "Fecha de entrada deseada",
+    "hasPets": "Tengo mascotas",
+    "submit": "Crear mi perfil",
+    "success": "¡Perfil creado! Revisa tu correo para confirmar tu cuenta."
+  },
+  "client": {
+    "profile": "Mi perfil",
+    "documents": "Mis documentos",
+    "visits": "Mis visitas",
+    "status": {
+      "unverified": "Pendiente de verificación",
+      "uploading": "Subiendo documentos",
+      "pending_review": "En revisión",
+      "active": "Activo",
+      "inactive": "Inactivo"
+    }
+  },
+  "documents": {
+    "upload": "Subir documento",
+    "uploaded": "Documento subido",
+    "replace": "Reemplazar",
+    "required": "Requerido",
+    "optional": "Opcional",
+    "allUploaded": "Todos los documentos subidos. ¡Tu perfil está listo para revisión!",
+    "pendingDocs": "Documentos pendientes"
+  },
+  "admin": {
+    "dashboard": "Panel de administración",
+    "clients": "Clientes",
+    "buildings": "Pisos",
+    "matches": "Matches",
+    "activate": "Activar perfil",
+    "deactivate": "Desactivar perfil",
+    "exportDocs": "Exportar documentos (ZIP)",
+    "matchAndNotify": "Match y notificar",
+    "newBuilding": "Añadir piso",
+    "publishBuilding": "Publicar piso",
+    "filterActive": "Solo activos",
+    "filterPending": "Pendientes de revisión"
+  },
+  "building": {
+    "price": "Precio",
+    "rooms": "Habitaciones",
+    "bathrooms": "Baños",
+    "size": "Superficie",
+    "floor": "Planta",
+    "elevator": "Ascensor",
+    "furnished": "Amueblado",
+    "neighborhood": "Barrio",
+    "availableFrom": "Disponible desde",
+    "bookVisit": "Reservar visita",
+    "selectSlot": "Selecciona un horario",
+    "slotBooked": "Ya has reservado una visita para este piso.",
+    "noSlots": "No hay horarios disponibles en este momento."
+  },
+  "visit": {
+    "confirmTitle": "Confirma tu visita",
+    "confirmText": "Vas a reservar una visita para el {datetime}. ¿Confirmas?",
+    "confirmed": "¡Visita confirmada! Te hemos enviado un correo de confirmación.",
+    "yourVisits": "Tus visitas programadas",
+    "noVisits": "No tienes visitas programadas."
+  }
+}
