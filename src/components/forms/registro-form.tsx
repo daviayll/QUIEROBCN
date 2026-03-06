@@ -2,6 +2,7 @@
 
 import { useState, useActionState } from 'react'
 import Link from 'next/link'
+import { ExternalLink } from 'lucide-react'
 import { registerAction, type ActionResult } from '@/actions/clients'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -29,6 +30,7 @@ export function RegistroForm({ locale }: { locale: string }) {
   const [profileType, setProfileType] = useState('')
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<string[]>([])
   const [hasPets, setHasPets] = useState(false)
+  const [gdprConsent, setGdprConsent] = useState(false)
 
   const toggleNeighborhood = (n: string) => {
     setSelectedNeighborhoods(prev =>
@@ -188,10 +190,52 @@ export function RegistroForm({ locale }: { locale: string }) {
               </label>
             </div>
           </div>
+
+          <Separator />
+
+          {/* GDPR consent — mandatory, Art. 7 */}
+          <div className="rounded-md border border-border bg-muted/50 p-4 space-y-3">
+            <h3 className="text-sm font-medium">Consentimiento de tratamiento de datos</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Para gestionar tu búsqueda de vivienda, necesitamos tratar tus datos personales
+              (nombre, contacto, documentos financieros e identificativos). Estos datos serán
+              tratados de forma confidencial, no se compartirán con terceros salvo las promotoras
+              inmobiliarias a las que se apliques, y podrás solicitar su eliminación en cualquier
+              momento.{' '}
+              <Link
+                href={`/${locale}/privacidad`}
+                className="text-primary hover:underline inline-flex items-center gap-0.5"
+                target="_blank"
+              >
+                Política de privacidad
+                <ExternalLink className="h-3 w-3" />
+              </Link>
+            </p>
+
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="gdpr_consent"
+                checked={gdprConsent}
+                onCheckedChange={v => setGdprConsent(!!v)}
+                className="mt-0.5"
+                required
+              />
+              <input type="hidden" name="gdpr_consent" value={gdprConsent ? 'true' : 'false'} />
+              <label htmlFor="gdpr_consent" className="text-sm cursor-pointer leading-snug">
+                He leído y acepto el tratamiento de mis datos personales, incluyendo la subida
+                de documentos sensibles (DNI/NIE, nóminas, etc.), con el fin de gestionar mi
+                búsqueda de vivienda en Barcelona. <span className="text-destructive">*</span>
+              </label>
+            </div>
+
+            {state && !state.success && state.fieldErrors?.gdpr_consent && (
+              <p className="text-xs text-destructive">{state.fieldErrors.gdpr_consent[0]}</p>
+            )}
+          </div>
         </CardContent>
 
         <CardFooter className="flex flex-col gap-3">
-          <Button type="submit" className="w-full" disabled={isPending}>
+          <Button type="submit" className="w-full" disabled={isPending || !gdprConsent}>
             {isPending ? 'Creando tu perfil...' : 'Crear mi perfil'}
           </Button>
           <p className="text-center text-sm text-muted-foreground">

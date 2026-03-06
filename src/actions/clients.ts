@@ -25,6 +25,10 @@ const registerSchema = z.object({
   preferred_neighborhoods: z.array(z.string()).optional(),
   move_in_date: z.string().optional(),
   has_pets: z.boolean().optional(),
+  // GDPR Art. 7 — explicit consent is mandatory
+  gdpr_consent: z.string().refine(v => v === 'true', {
+    message: 'Debes aceptar el tratamiento de datos para continuar.',
+  }),
 })
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -84,6 +88,7 @@ export async function registerAction(
     preferred_neighborhoods: formData.getAll('preferred_neighborhoods'),
     move_in_date: formData.get('move_in_date') || undefined,
     has_pets: formData.get('has_pets') === 'true',
+    gdpr_consent: formData.get('gdpr_consent') as string,
   }
 
   const parsed = registerSchema.safeParse(raw)
@@ -107,6 +112,7 @@ export async function registerAction(
     preferred_neighborhoods,
     move_in_date,
     has_pets,
+    gdpr_consent,
   } = parsed.data
 
   const supabase = await createClient()
@@ -127,7 +133,7 @@ export async function registerAction(
     return { success: false, error: authError?.message ?? 'Error al crear la cuenta.' }
   }
 
-  // 2. Insert client profile
+  // 2. Insert client profile (consent_given_at = now, as user just accepted)
   const { error: clientError } = await supabase.from('clients').insert({
     user_id: authData.user.id,
     full_name,
@@ -136,6 +142,7 @@ export async function registerAction(
     profile_type: profile_type as ProfileType,
     monthly_income: monthly_income ?? null,
     status: 'unverified',
+    consent_given_at: gdpr_consent === 'true' ? new Date().toISOString() : null,
     preferences: {
       max_rent: max_rent ?? null,
       min_rooms: min_rooms ?? null,

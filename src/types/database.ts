@@ -14,20 +14,34 @@ type ClientRow = {
   email: string; profile_type: 'empleado' | 'estudiante' | 'autonomo' | 'otro'
   status: 'unverified' | 'uploading' | 'pending_review' | 'active' | 'inactive'
   monthly_income: number | null; preferences: Json; activated_at: string | null; created_at: string
+  consent_given_at: string | null     // GDPR Art. 7
+  deletion_requested_at: string | null // GDPR Art. 17
 }
 type ClientInsert = {
   id?: string; user_id?: string | null; full_name: string; phone?: string | null
   email: string; profile_type: 'empleado' | 'estudiante' | 'autonomo' | 'otro'
   status?: 'unverified' | 'uploading' | 'pending_review' | 'active' | 'inactive'
   monthly_income?: number | null; preferences?: Json; activated_at?: string | null; created_at?: string
+  consent_given_at?: string | null
+  deletion_requested_at?: string | null
 }
 type DocumentRow = {
   id: string; client_id: string; doc_type: string; file_path: string
   file_name: string; uploaded_at: string; is_current: boolean
+  deleted_at: string | null // GDPR soft delete
 }
 type DocumentInsert = {
   id?: string; client_id: string; doc_type: string; file_path: string
   file_name: string; uploaded_at?: string; is_current?: boolean
+  deleted_at?: string | null
+}
+type DocumentAccessLogRow = {
+  id: string; client_id: string; accessed_by: string
+  action: 'view' | 'download' | 'export_zip'; accessed_at: string
+}
+type DocumentAccessLogInsert = {
+  id?: string; client_id: string; accessed_by: string
+  action: 'view' | 'download' | 'export_zip'; accessed_at?: string
 }
 type BuildingRow = {
   id: string; slug: string; name: string; neighborhood: string; address: string | null
@@ -74,10 +88,15 @@ export type Database = {
       buildings: { Row: BuildingRow; Insert: BuildingInsert; Update: Partial<BuildingInsert>; Relationships: [] }
       visit_slots: { Row: VisitSlotRow; Insert: VisitSlotInsert; Update: Partial<VisitSlotInsert>; Relationships: [] }
       matches: { Row: MatchRow; Insert: MatchInsert; Update: Partial<MatchInsert>; Relationships: [] }
+      document_access_log: { Row: DocumentAccessLogRow; Insert: DocumentAccessLogInsert; Update: Partial<DocumentAccessLogInsert>; Relationships: [] }
     }
     Views: Record<string, never>
     Functions: {
       book_visit_slot: { Args: { p_slot_id: string; p_client_id: string }; Returns: Json }
+      request_gdpr_deletion: {
+        Args: { p_user_id: string }
+        Returns: Json // { success, client_id, file_paths[] }
+      }
       match_building: {
         Args: { p_building_id: string }
         Returns: Array<{

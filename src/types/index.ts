@@ -6,6 +6,7 @@ export type Document = Database['public']['Tables']['documents']['Row']
 export type Building = Database['public']['Tables']['buildings']['Row']
 export type VisitSlot = Database['public']['Tables']['visit_slots']['Row']
 export type Match = Database['public']['Tables']['matches']['Row']
+export type DocumentAccessLog = Database['public']['Tables']['document_access_log']['Row']
 
 // Insert types
 export type NewClient = Database['public']['Tables']['clients']['Insert']
