@@ -65,7 +65,7 @@ export async function loginAction(
     return { success: false, error: 'Email o contraseña incorrectos.' }
   }
 
-  const isAdmin = data.user?.user_metadata?.role === 'admin'
+  const isAdmin = data.user?.app_metadata?.role === 'admin'
   redirect(isAdmin ? `/${locale}/admin` : `/${locale}/perfil`)
 }
 
