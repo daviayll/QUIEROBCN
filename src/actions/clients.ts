@@ -172,6 +172,115 @@ export async function registerAction(
   redirect(`/${locale}/verificar-email`)
 }
 
+// ── Update profile ────────────────────────────────────────────────────────
+
+const updateProfileSchema = z.object({
+  full_name: z.string().min(2, 'Nombre demasiado corto'),
+  phone: z.string().optional(),
+  profile_type: z.enum(['empleado', 'estudiante', 'autonomo', 'otro']),
+  monthly_income: z.coerce.number().min(0).optional(),
+  max_rent: z.coerce.number().min(0).optional(),
+  min_rooms: z.coerce.number().min(1).optional(),
+  preferred_neighborhoods: z.array(z.string()).optional(),
+  move_in_date: z.string().optional(),
+  has_pets: z.boolean().optional(),
+})
+
+export async function updateProfileAction(
+  locale: string,
+  _prev: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  const raw = {
+    full_name: formData.get('full_name'),
+    phone: formData.get('phone') || undefined,
+    profile_type: formData.get('profile_type'),
+    monthly_income: formData.get('monthly_income') || undefined,
+    max_rent: formData.get('max_rent') || undefined,
+    min_rooms: formData.get('min_rooms') || undefined,
+    preferred_neighborhoods: formData.getAll('preferred_neighborhoods'),
+    move_in_date: formData.get('move_in_date') || undefined,
+    has_pets: formData.get('has_pets') === 'true',
+  }
+
+  const parsed = updateProfileSchema.safeParse(raw)
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Por favor corrige los errores del formulario',
+      fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+      values: {
+        full_name: String(raw.full_name ?? ''),
+        phone: String(raw.phone ?? ''),
+        profile_type: String(raw.profile_type ?? ''),
+        monthly_income: String(raw.monthly_income ?? ''),
+        max_rent: String(raw.max_rent ?? ''),
+        min_rooms: String(raw.min_rooms ?? ''),
+        move_in_date: String(raw.move_in_date ?? ''),
+      },
+    }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'No autorizado' }
+
+  const { data: current } = await supabase
+    .from('clients')
+    .select('id, status, profile_type, full_name')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!current) return { success: false, error: 'Perfil no encontrado' }
+
+  const {
+    full_name,
+    phone,
+    profile_type,
+    monthly_income,
+    max_rent,
+    min_rooms,
+    preferred_neighborhoods,
+    move_in_date,
+    has_pets,
+  } = parsed.data
+
+  // Determine status change
+  const profileTypeChanged = profile_type !== current.profile_type
+  const nameChanged = full_name !== current.full_name
+  const isVerifiedStatus = current.status === 'active' || current.status === 'inactive'
+
+  let newStatus: 'pending_review' | undefined
+  if (profileTypeChanged && isVerifiedStatus) {
+    newStatus = 'pending_review'
+  } else if (nameChanged && current.status === 'active') {
+    newStatus = 'pending_review'
+  }
+
+  const { error } = await supabase
+    .from('clients')
+    .update({
+      full_name,
+      phone: phone ?? null,
+      profile_type: profile_type as ProfileType,
+      monthly_income: monthly_income ?? null,
+      ...(newStatus ? { status: newStatus } : {}),
+      preferences: {
+        max_rent: max_rent ?? null,
+        min_rooms: min_rooms ?? null,
+        preferred_neighborhoods: preferred_neighborhoods ?? [],
+        move_in_date: move_in_date ?? null,
+        has_pets: has_pets ?? false,
+      },
+    })
+    .eq('id', current.id)
+
+  if (error) return { success: false, error: 'Error al guardar los cambios.' }
+
+  revalidatePath(`/${locale}/perfil`)
+  redirect(`/${locale}/perfil`)
+}
+
 // ── Logout ────────────────────────────────────────────────────────────────
 
 export async function logoutAction(locale: string) {

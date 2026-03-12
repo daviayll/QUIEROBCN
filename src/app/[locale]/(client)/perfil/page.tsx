@@ -1,8 +1,11 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { Pencil } from 'lucide-react'
 import { BARCELONA_NEIGHBORHOODS, DOC_LABELS, REQUIRED_DOCS } from '@/types'
 import type { ClientPreferences, ProfileType } from '@/types'
 
@@ -45,11 +48,19 @@ export default async function PerfilPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold">Mi perfil</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Tu información y preferencias de búsqueda.
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-bold">Mi perfil</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Tu información y preferencias de búsqueda.
+          </p>
+        </div>
+        <Button asChild variant="outline" size="sm">
+          <Link href={`/${locale}/perfil/editar`}>
+            <Pencil className="mr-1.5 h-4 w-4" />
+            Editar perfil
+          </Link>
+        </Button>
       </div>
 
       {/* Personal data */}
