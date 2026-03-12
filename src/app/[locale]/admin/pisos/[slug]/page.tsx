@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator'
 import { ArrowLeft, CalendarDays, Users, CheckCircle2, Clock } from 'lucide-react'
 import MatchTrigger from '@/components/admin/match-trigger'
 import AddSlotForm from '@/components/admin/add-slot-form'
+import MatchNotifier from '@/components/admin/match-notifier'
 
 const statusLabel: Record<string, string> = {
   draft: 'Borrador',
@@ -61,7 +62,7 @@ export default async function BuildingDetailPage({
 
   const { data: matchesRaw } = await supabase
     .from('matches')
-    .select('id, score, status, created_at, client_id')
+    .select('id, score, status, created_at, notified_at, client_id')
     .eq('building_id', building.id)
     .order('score', { ascending: false })
 
@@ -130,34 +131,18 @@ export default async function BuildingDetailPage({
               </div>
             </CardHeader>
             <CardContent>
-              {!matches || matches.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Sin emparejamientos todavía. Ejecuta el matching para encontrar clientes compatibles.
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {matches.map(m => {
-                    const client = m.client
-                    return (
-                      <div key={m.id} className="flex items-center justify-between gap-3 rounded-md border p-3">
-                        <div>
-                          <Link
-                            href={`/${locale}/admin/clientes/${client?.id}`}
-                            className="text-sm font-medium hover:underline"
-                          >
-                            {client?.full_name ?? '—'}
-                          </Link>
-                          <p className="text-xs text-muted-foreground">{client?.email}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">Score: {m.score}</span>
-                          <Badge variant="outline" className="text-xs">{m.status}</Badge>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
+              <MatchNotifier
+                matches={matches.map(m => ({
+                  id: m.id,
+                  score: m.score,
+                  status: m.status,
+                  notified_at: m.notified_at ?? null,
+                  client: m.client ? { id: m.client.id, full_name: m.client.full_name, email: m.client.email } : null,
+                }))}
+                buildingId={building.id}
+                buildingSlug={building.slug}
+                locale={locale}
+              />
             </CardContent>
           </Card>
 
