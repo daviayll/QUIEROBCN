@@ -192,22 +192,24 @@ export async function notifyMatchesWhatsApp(
 
     if (error) return { success: false, notified: 0, errors: [error.message] }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL
+    if (!appUrl) {
+      return { success: false, notified: 0, errors: ['NEXT_PUBLIC_APP_URL no está configurada'] }
+    }
     const bookingUrl = `${appUrl}/${locale}/visita/${buildingSlug}`
 
     const successfulIds: string[] = []
     const errors: string[] = []
 
-    for (const match of matches ?? []) {
-      const client = Array.isArray((match as any).clients) ? (match as any).clients[0] : (match as any).clients
-      const building = Array.isArray((match as any).buildings) ? (match as any).buildings[0] : (match as any).buildings
+    const results = await Promise.allSettled(
+      (matches ?? []).map(async (match) => {
+        const client = Array.isArray((match as any).clients) ? (match as any).clients[0] : (match as any).clients
+        const building = Array.isArray((match as any).buildings) ? (match as any).buildings[0] : (match as any).buildings
 
-      if (!client?.phone) {
-        errors.push(`Cliente ${client?.full_name ?? match.client_id} sin teléfono`)
-        continue
-      }
+        if (!client?.phone) {
+          throw new Error(`Cliente ${client?.full_name ?? match.client_id} sin teléfono`)
+        }
 
-      try {
         const res = await fetch(process.env.N8N_WHATSAPP_WEBHOOK_URL!, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -218,13 +220,22 @@ export async function notifyMatchesWhatsApp(
             booking_url: bookingUrl,
           }),
         })
+
         if (!res.ok) {
-          errors.push(`Error enviando a ${client.full_name}: ${res.status}`)
-        } else {
-          successfulIds.push(match.id)
+          throw new Error(`Error enviando a ${client.full_name}: ${res.status}`)
         }
-      } catch (fetchErr) {
-        errors.push(`Error enviando a ${client.full_name}: ${(fetchErr as Error).message}`)
+
+        return match.id
+      })
+    )
+
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i]
+      const match = (matches ?? [])[i]
+      if (result.status === 'fulfilled') {
+        successfulIds.push(result.value)
+      } else {
+        errors.push(result.reason?.message ?? `Error en match ${match.id}`)
       }
     }
 

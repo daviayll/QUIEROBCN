@@ -79,6 +79,7 @@ export default function MatchNotifier({
         <button
           type="button"
           onClick={toggleAll}
+          disabled={isPending}
           className="text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
         >
           {allSelected ? 'Deseleccionar todos' : 'Seleccionar todos'}
@@ -93,19 +94,21 @@ export default function MatchNotifier({
           const isSelected = selectedIds.has(m.id)
           const isNotified = !!m.notified_at
           return (
-            <button
+            <div
               key={m.id}
-              type="button"
-              onClick={() => toggleSelect(m.id)}
-              className={`w-full rounded-md border p-3 text-left transition-all ${
+              role="checkbox"
+              aria-checked={isSelected}
+              tabIndex={0}
+              onClick={() => !isPending && toggleSelect(m.id)}
+              onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && !isPending) toggleSelect(m.id) }}
+              className={`w-full rounded-md border p-3 text-left transition-all cursor-pointer ${
                 isSelected ? 'ring-2 ring-primary border-primary' : 'hover:bg-muted/50'
-              }`}
+              } ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <Link
                     href={`/${locale}/admin/clientes/${m.client?.id}`}
-                    onClick={e => e.stopPropagation()}
                     className="text-sm font-medium hover:underline"
                   >
                     {m.client?.full_name ?? '—'}
@@ -121,13 +124,19 @@ export default function MatchNotifier({
                   )}
                 </div>
               </div>
-            </button>
+            </div>
           )
         })}
       </div>
 
       {result && (
-        <div className={`rounded-md px-3 py-2 text-xs ${result.errors.length > 0 && result.notified === 0 ? 'bg-destructive/10 text-destructive' : 'bg-green-50 text-green-700'}`}>
+        <div className={`rounded-md px-3 py-2 text-xs ${
+  result.notified === 0
+    ? 'bg-destructive/10 text-destructive'
+    : result.errors.length > 0
+    ? 'bg-amber-50 text-amber-700'
+    : 'bg-green-50 text-green-700'
+}`}>
           {result.notified > 0 && <p>{result.notified} cliente{result.notified !== 1 ? 's' : ''} notificado{result.notified !== 1 ? 's' : ''} por WhatsApp</p>}
           {result.errors.map((e, i) => <p key={i}>{e}</p>)}
         </div>
