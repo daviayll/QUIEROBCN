@@ -39,6 +39,8 @@ export function LoginForm({ locale }: { locale: string }) {
               autoComplete="email"
               required
               placeholder="tu@email.com"
+              defaultValue={state && !state.success ? (state.values?.email ?? '') : ''}
+              className={state && !state.success && state.fieldErrors?.email ? 'border-destructive' : ''}
             />
             {state && !state.success && state.fieldErrors?.email && (
               <p className="text-xs text-destructive">{state.fieldErrors.email[0]}</p>
@@ -53,6 +55,7 @@ export function LoginForm({ locale }: { locale: string }) {
               type="password"
               autoComplete="current-password"
               required
+              className={state && !state.success && state.fieldErrors?.password ? 'border-destructive' : ''}
             />
             {state && !state.success && state.fieldErrors?.password && (
               <p className="text-xs text-destructive">{state.fieldErrors.password[0]}</p>
