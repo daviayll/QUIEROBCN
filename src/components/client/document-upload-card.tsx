@@ -151,6 +151,7 @@ export default function DocumentUploadCard({
         type="file"
         accept="application/pdf"
         className="hidden"
+        data-testid="file-input"
         onChange={handleFileSelect}
       />
     </Card>
