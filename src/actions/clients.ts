@@ -281,6 +281,80 @@ export async function updateProfileAction(
   redirect(`/${locale}/perfil`)
 }
 
+// ── Forgot password ───────────────────────────────────────────────────────
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Email inválido'),
+})
+
+export async function forgotPasswordAction(
+  locale: string,
+  _prev: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  const raw = { email: formData.get('email') }
+  const parsed = forgotPasswordSchema.safeParse(raw)
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Email inválido',
+      fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+    }
+  }
+
+  const origin = process.env.NEXT_PUBLIC_APP_URL ?? ''
+  const supabase = await createClient()
+  await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${origin}/auth/callback?next=/${locale}/nueva-contrasena`,
+  })
+
+  // Always return success to avoid leaking whether an email is registered
+  return { success: true, message: 'Si ese email está registrado, recibirás un enlace en breve.' }
+}
+
+// ── Update password ───────────────────────────────────────────────────────
+
+const updatePasswordSchema = z
+  .object({
+    password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
+    confirm_password: z.string(),
+  })
+  .refine(data => data.password === data.confirm_password, {
+    message: 'Las contraseñas no coinciden',
+    path: ['confirm_password'],
+  })
+
+export async function updatePasswordAction(
+  locale: string,
+  _prev: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  const raw = {
+    password: formData.get('password'),
+    confirm_password: formData.get('confirm_password'),
+  }
+
+  const parsed = updatePasswordSchema.safeParse(raw)
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Por favor corrige los errores del formulario',
+      fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+    }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Sesión expirada. Solicita un nuevo enlace.' }
+
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password })
+  if (error) return { success: false, error: 'No se pudo actualizar la contraseña. Inténtalo de nuevo.' }
+
+  revalidatePath(`/${locale}/perfil`)
+  redirect(`/${locale}/perfil`)
+}
+
 // ── Logout ────────────────────────────────────────────────────────────────
 
 export async function logoutAction(locale: string) {

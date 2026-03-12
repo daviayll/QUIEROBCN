@@ -8,10 +8,11 @@ const intlMiddleware = createMiddleware(routing)
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Skip middleware for static assets and API routes
+  // Skip middleware for static assets, API routes, and auth callback
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
+    pathname.startsWith('/auth/callback') ||
     pathname.includes('.')
   ) {
     return NextResponse.next()
@@ -23,7 +24,7 @@ export async function middleware(request: NextRequest) {
   // Determine if path is admin route (after locale prefix)
   const isAdminRoute = /^\/(es|en)\/(admin)/.test(pathname)
   const isClientRoute = /^\/(es|en)\/(perfil|documentos|visitas)/.test(pathname)
-  const isAuthRoute = /^\/(es|en)\/(login|registro|verificar-email)/.test(pathname)
+  const isAuthRoute = /^\/(es|en)\/(login|registro|verificar-email|olvide-contrasena)/.test(pathname)
 
   // Protect admin routes
   if (isAdminRoute) {
