@@ -38,7 +38,7 @@ const buildingSchema = z.object({
 })
 
 export type ActionResult =
-  | { success: true; slug?: string }
+  | { success: true; slug: string; id: string }
   | { success: false; error: string; fieldErrors?: Record<string, string[]> }
 
 export async function createBuilding(
@@ -94,9 +94,94 @@ export async function createBuilding(
     }
 
     revalidatePath(`/${locale}/admin/pisos`)
-    redirect(`/${locale}/admin/pisos/${parsed.data.slug}`)
+
+    const { data: created } = await supabase
+      .from('buildings')
+      .select('id')
+      .eq('slug', parsed.data.slug)
+      .single()
+
+    return { success: true, slug: parsed.data.slug, id: created?.id ?? '' }
   } catch (e) {
-    if ((e as Error).message === 'NEXT_REDIRECT') throw e
+    return { success: false, error: (e as Error).message }
+  }
+}
+
+export async function updateBuilding(
+  buildingId: string,
+  locale: string,
+  _prev: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  try {
+    const supabase = await requireAdmin()
+
+    const raw = {
+      name: formData.get('name'),
+      slug: formData.get('slug'),
+      neighborhood: formData.get('neighborhood'),
+      address: formData.get('address') || undefined,
+      price: formData.get('price'),
+      rooms: formData.get('rooms'),
+      bathrooms: formData.get('bathrooms') || undefined,
+      size_sqm: formData.get('size_sqm') || undefined,
+      floor: formData.get('floor') || undefined,
+      has_elevator: formData.get('has_elevator') === 'true',
+      furnished: formData.get('furnished') === 'true',
+      min_income: formData.get('min_income') || undefined,
+      min_solvency_ratio: formData.get('min_solvency_ratio') || 3,
+      allowed_profiles: formData.getAll('allowed_profiles'),
+      available_from: formData.get('available_from') || undefined,
+      description_es: formData.get('description_es') || undefined,
+      description_en: formData.get('description_en') || undefined,
+      real_estate_company: formData.get('real_estate_company') || undefined,
+      company_contact: formData.get('company_contact') || undefined,
+      status: formData.get('status') || 'draft',
+    }
+
+    const parsed = buildingSchema.safeParse(raw)
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: 'Por favor corrige los errores del formulario',
+        fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+      }
+    }
+
+    // Fetch old slug to revalidate old paths if slug changed
+    const { data: existing } = await supabase
+      .from('buildings')
+      .select('slug')
+      .eq('id', buildingId)
+      .single()
+
+    const { error } = await supabase
+      .from('buildings')
+      .update({ ...parsed.data })
+      .eq('id', buildingId)
+
+    if (error) {
+      if (error.code === '23505') {
+        return {
+          success: false,
+          error: 'Ya existe un piso con ese slug.',
+          fieldErrors: { slug: ['Este slug ya está en uso'] },
+        }
+      }
+      return { success: false, error: error.message }
+    }
+
+    if (existing?.slug && existing.slug !== parsed.data.slug) {
+      revalidatePath(`/${locale}/admin/pisos/${existing.slug}`)
+      revalidatePath(`/${locale}/admin/pisos/${existing.slug}/editar`)
+      revalidatePath(`/${locale}/visita/${existing.slug}`)
+    }
+    revalidatePath(`/${locale}/admin/pisos/${parsed.data.slug}`)
+    revalidatePath(`/${locale}/admin/pisos`)
+    revalidatePath(`/${locale}/visita/${parsed.data.slug}`)
+
+    return { success: true, slug: parsed.data.slug, id: buildingId }
+  } catch (e) {
     return { success: false, error: (e as Error).message }
   }
 }
@@ -118,6 +203,75 @@ export async function updateBuildingStatus(
     return { success: true }
   } catch (e) {
     return { success: false, error: (e as Error).message }
+  }
+}
+
+export async function addBuildingPhoto(
+  buildingId: string,
+  buildingSlug: string,
+  photoUrl: string
+): Promise<{ error?: string }> {
+  try {
+    const supabase = await requireAdmin()
+
+    const { data: building } = await supabase
+      .from('buildings')
+      .select('photos')
+      .eq('id', buildingId)
+      .single()
+
+    if (!building) return { error: 'Piso no encontrado' }
+
+    const photos = [...(building.photos ?? []), photoUrl]
+    const { error } = await supabase
+      .from('buildings')
+      .update({ photos })
+      .eq('id', buildingId)
+
+    if (error) return { error: error.message }
+
+    revalidatePath(`/admin/pisos/${buildingSlug}`)
+    revalidatePath(`/visita/${buildingSlug}`)
+    return {}
+  } catch (e) {
+    return { error: (e as Error).message }
+  }
+}
+
+export async function removeBuildingPhoto(
+  buildingId: string,
+  buildingSlug: string,
+  photoUrl: string
+): Promise<{ error?: string }> {
+  try {
+    const supabase = await requireAdmin()
+
+    const storagePath = photoUrl.split('/object/public/buildings/')[1]
+    if (storagePath) {
+      await supabase.storage.from('buildings').remove([storagePath])
+    }
+
+    const { data: building } = await supabase
+      .from('buildings')
+      .select('photos')
+      .eq('id', buildingId)
+      .single()
+
+    if (!building) return { error: 'Piso no encontrado' }
+
+    const photos = (building.photos ?? []).filter((p: string) => p !== photoUrl)
+    const { error } = await supabase
+      .from('buildings')
+      .update({ photos })
+      .eq('id', buildingId)
+
+    if (error) return { error: error.message }
+
+    revalidatePath(`/admin/pisos/${buildingSlug}`)
+    revalidatePath(`/visita/${buildingSlug}`)
+    return {}
+  } catch (e) {
+    return { error: (e as Error).message }
   }
 }
 

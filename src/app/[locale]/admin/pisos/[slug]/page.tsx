@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { ArrowLeft, CalendarDays, Users, CheckCircle2, Clock } from 'lucide-react'
+import { ArrowLeft, CalendarDays, Users, CheckCircle2, Clock, ImageIcon, Pencil } from 'lucide-react'
 import MatchTrigger from '@/components/admin/match-trigger'
 import AddSlotForm from '@/components/admin/add-slot-form'
 import MatchNotifier from '@/components/admin/match-notifier'
+import BuildingPhotoUpload from '@/components/admin/building-photo-upload'
 
 const statusLabel: Record<string, string> = {
   draft: 'Borrador',
@@ -109,6 +110,12 @@ export default async function BuildingDetailPage({
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">
+            <Link href={`/${locale}/admin/pisos/${building.slug}/editar`}>
+              <Pencil className="mr-1 h-4 w-4" />
+              Editar
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
             <Link href={`/${locale}/visita/${building.slug}`} target="_blank">
               Ver página pública
             </Link>
@@ -119,6 +126,23 @@ export default async function BuildingDetailPage({
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main column */}
         <div className="space-y-6 lg:col-span-2">
+          {/* Photos */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <ImageIcon className="h-4 w-4" />
+                Fotos ({building.photos?.length ?? 0})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BuildingPhotoUpload
+                buildingId={building.id}
+                buildingSlug={building.slug}
+                initialPhotos={building.photos ?? []}
+              />
+            </CardContent>
+          </Card>
+
           {/* Matching */}
           <Card>
             <CardHeader>
