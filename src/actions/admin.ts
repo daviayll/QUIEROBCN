@@ -69,6 +69,26 @@ export async function setPendingReview(
   }
 }
 
+export async function updateClientPhone(
+  clientId: string,
+  phone: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { supabase } = await requireAdmin()
+
+    const { error } = await supabase
+      .from('clients')
+      .update({ phone })
+      .eq('id', clientId)
+
+    if (error) return { success: false, error: error.message }
+    revalidatePath('/admin/clientes')
+    return { success: true }
+  } catch (e) {
+    return { success: false, error: (e as Error).message }
+  }
+}
+
 /**
  * Generates a signed URL for an admin to view a client document.
  * Logs the access in document_access_log for GDPR accountability (Art. 5.2).
