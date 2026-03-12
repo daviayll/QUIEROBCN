@@ -190,3 +190,85 @@ export async function requestClientDeletion(
     return { success: false, error: (e as Error).message }
   }
 }
+
+export async function notifyMatchesWhatsApp(
+  matchIds: string[],
+  buildingId: string,
+  buildingSlug: string,
+  locale: string = 'es'
+): Promise<{ success: boolean; notified: number; errors: string[] }> {
+  try {
+    const { supabase } = await requireAdmin()
+
+    if (!process.env.N8N_WHATSAPP_WEBHOOK_URL) {
+      return { success: false, notified: 0, errors: ['N8N_WHATSAPP_WEBHOOK_URL no está configurada'] }
+    }
+
+    const { data: matches, error } = await supabase
+      .from('matches')
+      .select('id, client_id, clients(full_name, phone), buildings(name)')
+      .in('id', matchIds)
+      .eq('building_id', buildingId)
+
+    if (error) return { success: false, notified: 0, errors: [error.message] }
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL
+    if (!appUrl) {
+      return { success: false, notified: 0, errors: ['NEXT_PUBLIC_APP_URL no está configurada'] }
+    }
+    const bookingUrl = `${appUrl}/${locale}/visita/${buildingSlug}`
+
+    const successfulIds: string[] = []
+    const errors: string[] = []
+
+    const results = await Promise.allSettled(
+      (matches ?? []).map(async (match) => {
+        const client = Array.isArray((match as any).clients) ? (match as any).clients[0] : (match as any).clients
+        const building = Array.isArray((match as any).buildings) ? (match as any).buildings[0] : (match as any).buildings
+
+        if (!client?.phone) {
+          throw new Error(`Cliente ${client?.full_name ?? match.client_id} sin teléfono`)
+        }
+
+        const res = await fetch(process.env.N8N_WHATSAPP_WEBHOOK_URL!, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: client.phone,
+            name: client.full_name,
+            building_name: building?.name ?? '',
+            booking_url: bookingUrl,
+          }),
+        })
+
+        if (!res.ok) {
+          throw new Error(`Error enviando a ${client.full_name}: ${res.status}`)
+        }
+
+        return match.id
+      })
+    )
+
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i]
+      const match = (matches ?? [])[i]
+      if (result.status === 'fulfilled') {
+        successfulIds.push(result.value)
+      } else {
+        errors.push(result.reason?.message ?? `Error en match ${match.id}`)
+      }
+    }
+
+    if (successfulIds.length > 0) {
+      await supabase
+        .from('matches')
+        .update({ status: 'notified', notified_at: new Date().toISOString() })
+        .in('id', successfulIds)
+    }
+
+    revalidatePath(`/admin/pisos/${buildingSlug}`)
+    return { success: true, notified: successfulIds.length, errors }
+  } catch (e) {
+    return { success: false, notified: 0, errors: [(e as Error).message] }
+  }
+}

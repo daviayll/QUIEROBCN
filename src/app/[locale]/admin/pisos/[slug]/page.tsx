@@ -5,9 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { ArrowLeft, CalendarDays, Users, CheckCircle2, Clock } from 'lucide-react'
+import { ArrowLeft, CalendarDays, Users, CheckCircle2, Clock, ImageIcon, Pencil } from 'lucide-react'
 import MatchTrigger from '@/components/admin/match-trigger'
 import AddSlotForm from '@/components/admin/add-slot-form'
+import MatchNotifier from '@/components/admin/match-notifier'
+import BuildingPhotoUpload from '@/components/admin/building-photo-upload'
 
 const statusLabel: Record<string, string> = {
   draft: 'Borrador',
@@ -61,7 +63,7 @@ export default async function BuildingDetailPage({
 
   const { data: matchesRaw } = await supabase
     .from('matches')
-    .select('id, score, status, created_at, client_id')
+    .select('id, score, status, created_at, notified_at, client_id')
     .eq('building_id', building.id)
     .order('score', { ascending: false })
 
@@ -108,6 +110,12 @@ export default async function BuildingDetailPage({
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">
+            <Link href={`/${locale}/admin/pisos/${building.slug}/editar`}>
+              <Pencil className="mr-1 h-4 w-4" />
+              Editar
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
             <Link href={`/${locale}/visita/${building.slug}`} target="_blank">
               Ver página pública
             </Link>
@@ -118,6 +126,23 @@ export default async function BuildingDetailPage({
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main column */}
         <div className="space-y-6 lg:col-span-2">
+          {/* Photos */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <ImageIcon className="h-4 w-4" />
+                Fotos ({building.photos?.length ?? 0})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BuildingPhotoUpload
+                buildingId={building.id}
+                buildingSlug={building.slug}
+                initialPhotos={building.photos ?? []}
+              />
+            </CardContent>
+          </Card>
+
           {/* Matching */}
           <Card>
             <CardHeader>
@@ -130,34 +155,18 @@ export default async function BuildingDetailPage({
               </div>
             </CardHeader>
             <CardContent>
-              {!matches || matches.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Sin emparejamientos todavía. Ejecuta el matching para encontrar clientes compatibles.
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {matches.map(m => {
-                    const client = m.client
-                    return (
-                      <div key={m.id} className="flex items-center justify-between gap-3 rounded-md border p-3">
-                        <div>
-                          <Link
-                            href={`/${locale}/admin/clientes/${client?.id}`}
-                            className="text-sm font-medium hover:underline"
-                          >
-                            {client?.full_name ?? '—'}
-                          </Link>
-                          <p className="text-xs text-muted-foreground">{client?.email}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">Score: {m.score}</span>
-                          <Badge variant="outline" className="text-xs">{m.status}</Badge>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
+              <MatchNotifier
+                matches={matches.map(m => ({
+                  id: m.id,
+                  score: m.score,
+                  status: m.status,
+                  notified_at: m.notified_at ?? null,
+                  client: m.client ? { id: m.client.id, full_name: m.client.full_name, email: m.client.email } : null,
+                }))}
+                buildingId={building.id}
+                buildingSlug={building.slug}
+                locale={locale}
+              />
             </CardContent>
           </Card>
 

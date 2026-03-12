@@ -46,6 +46,17 @@ export default async function VisitaPublicPage({
     }
   }
 
+  let hasMatch = false
+  if (clientId) {
+    const { data: match } = await supabase
+      .from('matches')
+      .select('id')
+      .eq('building_id', building.id)
+      .eq('client_id', clientId)
+      .maybeSingle()
+    hasMatch = !!match
+  }
+
   const description = locale === 'en' && building.description_en
     ? building.description_en
     : building.description_es
@@ -147,6 +158,7 @@ export default async function VisitaPublicPage({
                     clientId={clientId}
                     locale={locale}
                     buildingSlug={slug}
+                    hasMatch={hasMatch}
                   />
                 </CardContent>
               </Card>
