@@ -1,6 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import { activateClient, deactivateClient, setPendingReview, requestClientDeletion } from '@/actions/admin'
 import { Button } from '@/components/ui/button'
 import type { ClientStatus } from '@/types'
@@ -13,6 +14,9 @@ interface ClientActionsProps {
 
 export default function ClientActions({ clientId, userId, status }: ClientActionsProps) {
   const [isPending, startTransition] = useTransition()
+  const router = useRouter()
+  const params = useParams()
+  const locale = params.locale as string
 
   const handle = (fn: () => Promise<{ success: boolean; error?: string }>) => {
     startTransition(async () => {
@@ -67,7 +71,14 @@ export default function ClientActions({ clientId, userId, status }: ClientAction
         disabled={isPending}
         onClick={() => {
           if (!confirm('¿Eliminar todos los datos de este cliente? Esta acción es irreversible (GDPR Art. 17).')) return
-          handle(() => requestClientDeletion(userId))
+          startTransition(async () => {
+            const result = await requestClientDeletion(userId)
+            if (!result.success) {
+              alert(result.error ?? 'Error desconocido')
+            } else {
+              router.push(`/${locale}/admin/clientes`)
+            }
+          })
         }}
       >
         Eliminar datos (GDPR)
