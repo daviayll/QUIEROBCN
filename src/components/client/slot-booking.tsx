@@ -18,6 +18,7 @@ interface SlotBookingProps {
   clientId: string | null
   locale: string
   buildingSlug: string
+  hasMatch: boolean
 }
 
 export default function SlotBooking({
@@ -25,6 +26,7 @@ export default function SlotBooking({
   clientId,
   locale,
   buildingSlug,
+  hasMatch,
 }: SlotBookingProps) {
   const [isPending, startTransition] = useTransition()
   const [bookedSlotId, setBookedSlotId] = useState<string | null>(null)
@@ -39,6 +41,16 @@ export default function SlotBooking({
         <Button asChild variant="outline" className="w-full">
           <Link href={`/${locale}/login`}>Iniciar sesión</Link>
         </Button>
+      </div>
+    )
+  }
+
+  if (clientId && !hasMatch) {
+    return (
+      <div className="space-y-2 text-center">
+        <p className="text-sm text-muted-foreground">
+          Los horarios de visita están disponibles solo para clientes que han recibido una propuesta de su agente. Si crees que es un error, contacta con tu agente.
+        </p>
       </div>
     )
   }
