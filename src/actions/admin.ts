@@ -108,11 +108,14 @@ export async function getAdminDocumentUrl(
     if (error) return { url: null, error: error.message }
 
     // Log the access — GDPR Art. 5(2) accountability
-    await supabase.from('document_access_log').insert({
+    const { error: logError } = await supabase.from('document_access_log').insert({
       client_id: clientId,
       accessed_by: user.id,
       action: 'view',
     })
+    if (logError) {
+      console.error('[GDPR] Failed to log document access:', logError.message)
+    }
 
     return { url: data.signedUrl }
   } catch (e) {

@@ -24,6 +24,8 @@ export default async function ClientesPage({
 }) {
   const { locale } = await params
   const { status, q } = await searchParams
+  // Whitelist-validate q to prevent operator injection via Supabase PostgREST filter strings
+  const safeQ = q && /^[a-zA-Z0-9\s@.\-áéíóúüñÁÉÍÓÚÜÑ]*$/.test(q) ? q : ''
   const supabase = await createClient()
 
   let query = supabase
@@ -34,8 +36,8 @@ export default async function ClientesPage({
   if (status && status !== 'all') {
     query = query.eq('status', status as 'unverified' | 'uploading' | 'pending_review' | 'active' | 'inactive')
   }
-  if (q) {
-    query = query.or(`full_name.ilike.%${q}%,email.ilike.%${q}%`)
+  if (safeQ) {
+    query = query.or(`full_name.ilike.%${safeQ}%,email.ilike.%${safeQ}%`)
   }
 
   const { data: clients } = await query
@@ -74,7 +76,7 @@ export default async function ClientesPage({
           {statuses.map(s => (
             <Link
               key={s.value}
-              href={`/${locale}/admin/clientes?status=${s.value}${q ? `&q=${q}` : ''}`}
+              href={`/${locale}/admin/clientes?status=${s.value}${safeQ ? `&q=${encodeURIComponent(safeQ)}` : ''}`}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 (status ?? 'all') === s.value
                   ? 'bg-primary text-primary-foreground'

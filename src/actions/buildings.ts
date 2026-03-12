@@ -246,11 +246,8 @@ export async function removeBuildingPhoto(
   try {
     const supabase = await requireAdmin()
 
-    const storagePath = photoUrl.split('/object/public/buildings/')[1]
-    if (storagePath) {
-      await supabase.storage.from('buildings').remove([storagePath])
-    }
-
+    // Fetch building first and verify the photoUrl is actually in its photos array
+    // This prevents path traversal attacks and unauthorized deletions
     const { data: building } = await supabase
       .from('buildings')
       .select('photos')
@@ -258,6 +255,15 @@ export async function removeBuildingPhoto(
       .single()
 
     if (!building) return { error: 'Piso no encontrado' }
+
+    if (!(building.photos ?? []).includes(photoUrl)) {
+      return { error: 'URL de foto no válida' }
+    }
+
+    const storagePath = photoUrl.split('/object/public/buildings/')[1]
+    if (storagePath) {
+      await supabase.storage.from('buildings').remove([storagePath])
+    }
 
     const photos = (building.photos ?? []).filter((p: string) => p !== photoUrl)
     const { error } = await supabase
