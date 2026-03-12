@@ -237,7 +237,7 @@ export default function BuildingForm({ locale }: { locale: string }) {
 
       <div className="flex items-center justify-between">
         <Select name="status" defaultValue="draft">
-          <SelectTrigger className="w-40">
+          <SelectTrigger className="w-52">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
