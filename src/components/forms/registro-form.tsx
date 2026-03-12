@@ -59,7 +59,10 @@ export function RegistroForm({ locale }: { locale: string }) {
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="full_name">Nombre completo *</Label>
-              <Input id="full_name" name="full_name" required placeholder="Ana García López" />
+              <Input id="full_name" name="full_name" required placeholder="Ana García López"
+                defaultValue={state && !state.success ? (state.values?.full_name ?? '') : ''}
+                className={state && !state.success && state.fieldErrors?.full_name ? 'border-destructive' : ''}
+              />
               {state && !state.success && state.fieldErrors?.full_name && (
                 <p className="text-xs text-destructive">{state.fieldErrors.full_name[0]}</p>
               )}
@@ -67,7 +70,10 @@ export function RegistroForm({ locale }: { locale: string }) {
 
             <div className="space-y-1.5">
               <Label htmlFor="email">Correo electrónico *</Label>
-              <Input id="email" name="email" type="email" required placeholder="ana@email.com" />
+              <Input id="email" name="email" type="email" required placeholder="ana@email.com"
+                defaultValue={state && !state.success ? (state.values?.email ?? '') : ''}
+                className={state && !state.success && state.fieldErrors?.email ? 'border-destructive' : ''}
+              />
             </div>
 
             <div className="space-y-1.5">
@@ -78,7 +84,9 @@ export function RegistroForm({ locale }: { locale: string }) {
 
             <div className="space-y-1.5">
               <Label htmlFor="phone">Teléfono</Label>
-              <Input id="phone" name="phone" type="tel" placeholder="+34 612 345 678" />
+              <Input id="phone" name="phone" type="tel" placeholder="+34 612 345 678"
+                defaultValue={state && !state.success ? (state.values?.phone ?? '') : ''}
+              />
             </div>
           </div>
 
@@ -115,6 +123,7 @@ export function RegistroForm({ locale }: { locale: string }) {
                 min="0"
                 step="50"
                 placeholder="1800"
+                defaultValue={state && !state.success ? (state.values?.monthly_income ?? '') : ''}
               />
             </div>
           )}
@@ -136,6 +145,7 @@ export function RegistroForm({ locale }: { locale: string }) {
                   step="50"
                   placeholder="1200"
                   required
+                  defaultValue={state && !state.success ? (state.values?.max_rent ?? '') : ''}
                 />
               </div>
               <div className="space-y-1.5">
@@ -147,13 +157,16 @@ export function RegistroForm({ locale }: { locale: string }) {
                   min="1"
                   max="6"
                   placeholder="2"
+                  defaultValue={state && !state.success ? (state.values?.min_rooms ?? '') : ''}
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="move_in_date">Fecha de entrada deseada</Label>
-              <Input id="move_in_date" name="move_in_date" type="date" />
+              <Input id="move_in_date" name="move_in_date" type="date"
+                defaultValue={state && !state.success ? (state.values?.move_in_date ?? '') : ''}
+              />
             </div>
 
             <div className="space-y-2">
