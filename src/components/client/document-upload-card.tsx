@@ -53,7 +53,7 @@ export default function DocumentUploadCard({
 
     const timestamp = Date.now()
     const ext = 'pdf'
-    const filePath = `documents/${userId}/${docType}_${timestamp}.${ext}`
+    const filePath = `${userId}/${docType}_${timestamp}.${ext}`
 
     // Upload directly to Supabase Storage (no file touches the server)
     const { error: storageError } = await supabase.storage
