@@ -170,3 +170,74 @@ export async function requestClientDeletion(
     return { success: false, error: (e as Error).message }
   }
 }
+
+export async function notifyMatchesWhatsApp(
+  matchIds: string[],
+  buildingId: string,
+  buildingSlug: string,
+  locale: string = 'es'
+): Promise<{ success: boolean; notified: number; errors: string[] }> {
+  try {
+    const { supabase } = await requireAdmin()
+
+    if (!process.env.N8N_WHATSAPP_WEBHOOK_URL) {
+      return { success: false, notified: 0, errors: ['N8N_WHATSAPP_WEBHOOK_URL no está configurada'] }
+    }
+
+    const { data: matches, error } = await supabase
+      .from('matches')
+      .select('id, client_id, clients(full_name, phone), buildings(name)')
+      .in('id', matchIds)
+      .eq('building_id', buildingId)
+
+    if (error) return { success: false, notified: 0, errors: [error.message] }
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+    const bookingUrl = `${appUrl}/${locale}/visita/${buildingSlug}`
+
+    const successfulIds: string[] = []
+    const errors: string[] = []
+
+    for (const match of matches ?? []) {
+      const client = Array.isArray((match as any).clients) ? (match as any).clients[0] : (match as any).clients
+      const building = Array.isArray((match as any).buildings) ? (match as any).buildings[0] : (match as any).buildings
+
+      if (!client?.phone) {
+        errors.push(`Cliente ${client?.full_name ?? match.client_id} sin teléfono`)
+        continue
+      }
+
+      try {
+        const res = await fetch(process.env.N8N_WHATSAPP_WEBHOOK_URL!, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: client.phone,
+            name: client.full_name,
+            building_name: building?.name ?? '',
+            booking_url: bookingUrl,
+          }),
+        })
+        if (!res.ok) {
+          errors.push(`Error enviando a ${client.full_name}: ${res.status}`)
+        } else {
+          successfulIds.push(match.id)
+        }
+      } catch (fetchErr) {
+        errors.push(`Error enviando a ${client.full_name}: ${(fetchErr as Error).message}`)
+      }
+    }
+
+    if (successfulIds.length > 0) {
+      await supabase
+        .from('matches')
+        .update({ status: 'notified', notified_at: new Date().toISOString() })
+        .in('id', successfulIds)
+    }
+
+    revalidatePath(`/admin/pisos/${buildingSlug}`)
+    return { success: true, notified: successfulIds.length, errors }
+  } catch (e) {
+    return { success: false, notified: 0, errors: [(e as Error).message] }
+  }
+}
