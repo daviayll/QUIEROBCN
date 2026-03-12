@@ -58,6 +58,7 @@ export async function recordDocumentUpload(
 
 /**
  * Marks a document as soft-deleted and removes it from storage.
+ * DB record is updated first — if it fails (RLS rejects), storage is untouched.
  * Only the document's owner can delete it (enforced by RLS).
  */
 export async function deleteDocument(
@@ -69,10 +70,7 @@ export async function deleteDocument(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'No autenticado' }
 
-  // Delete from Supabase Storage
-  await supabase.storage.from('documents').remove([filePath])
-
-  // Soft delete — GDPR Art. 17 audit trail
+  // Soft delete in DB first (RLS enforces ownership — fails if not the user's document)
   const { error } = await supabase
     .from('documents')
     .update({
@@ -85,18 +83,31 @@ export async function deleteDocument(
 
   if (error) return { success: false, error: error.message }
 
+  // Only delete from storage after DB record is confirmed soft-deleted
+  await supabase.storage.from('documents').remove([filePath])
+
   revalidatePath('/documentos')
   return { success: true }
 }
 
 /**
  * Generates a short-lived signed URL for a document file.
- * Used by the client to preview/download their own document.
+ * Verifies ownership via RLS before issuing the URL.
  */
 export async function getDocumentSignedUrl(
   filePath: string
 ): Promise<{ url: string | null; error?: string }> {
   const supabase = await createClient()
+
+  // Verify the document belongs to the calling user (RLS-enforced)
+  const { data: doc } = await supabase
+    .from('documents')
+    .select('id')
+    .eq('file_path', filePath)
+    .is('deleted_at', null)
+    .single()
+
+  if (!doc) return { url: null, error: 'Documento no encontrado' }
 
   const { data, error } = await supabase.storage
     .from('documents')

@@ -35,7 +35,7 @@ const registerSchema = z.object({
 
 export type ActionResult =
   | { success: true; message?: string }
-  | { success: false; error: string; fieldErrors?: Record<string, string[]> }
+  | { success: false; error: string; fieldErrors?: Record<string, string[]>; values?: Record<string, string> }
 
 // ── Login ─────────────────────────────────────────────────────────────────
 
@@ -55,6 +55,7 @@ export async function loginAction(
       success: false,
       error: 'Datos inválidos',
       fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+      values: { email: raw.email as string ?? '' },
     }
   }
 
@@ -62,10 +63,10 @@ export async function loginAction(
   const { data, error } = await supabase.auth.signInWithPassword(parsed.data)
 
   if (error) {
-    return { success: false, error: 'Email o contraseña incorrectos.' }
+    return { success: false, error: 'Email o contraseña incorrectos.', values: { email: parsed.data.email } }
   }
 
-  const isAdmin = data.user?.user_metadata?.role === 'admin'
+  const isAdmin = data.user?.app_metadata?.role === 'admin'
   redirect(isAdmin ? `/${locale}/admin` : `/${locale}/perfil`)
 }
 
@@ -91,12 +92,24 @@ export async function registerAction(
     gdpr_consent: formData.get('gdpr_consent') as string,
   }
 
+  const safeValues = {
+    email: String(raw.email ?? ''),
+    full_name: String(raw.full_name ?? ''),
+    phone: String(raw.phone ?? ''),
+    profile_type: String(raw.profile_type ?? ''),
+    monthly_income: String(raw.monthly_income ?? ''),
+    max_rent: String(raw.max_rent ?? ''),
+    min_rooms: String(raw.min_rooms ?? ''),
+    move_in_date: String(raw.move_in_date ?? ''),
+  }
+
   const parsed = registerSchema.safeParse(raw)
   if (!parsed.success) {
     return {
       success: false,
       error: 'Por favor corrige los errores del formulario',
       fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+      values: safeValues,
     }
   }
 
@@ -128,9 +141,9 @@ export async function registerAction(
 
   if (authError || !authData.user) {
     if (authError?.message?.includes('already registered')) {
-      return { success: false, error: 'Este email ya está registrado.' }
+      return { success: false, error: 'Este email ya está registrado.', values: safeValues }
     }
-    return { success: false, error: authError?.message ?? 'Error al crear la cuenta.' }
+    return { success: false, error: authError?.message ?? 'Error al crear la cuenta.', values: safeValues }
   }
 
   // 2. Insert client profile (consent_given_at = now, as user just accepted)
@@ -153,7 +166,7 @@ export async function registerAction(
   })
 
   if (clientError) {
-    return { success: false, error: 'Error al guardar el perfil. Inténtalo de nuevo.' }
+    return { success: false, error: 'Error al guardar el perfil. Inténtalo de nuevo.', values: safeValues }
   }
 
   redirect(`/${locale}/verificar-email`)

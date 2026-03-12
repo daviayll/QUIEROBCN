@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
       loginUrl.searchParams.set('redirectTo', pathname)
       return NextResponse.redirect(loginUrl)
     }
-    const isAdmin = user.user_metadata?.role === 'admin'
+    const isAdmin = user.app_metadata?.role === 'admin'
     if (!isAdmin) {
       return NextResponse.redirect(new URL(`/${pathname.split('/')[1]}/login`, request.url))
     }
@@ -47,7 +47,7 @@ export async function middleware(request: NextRequest) {
 
   // Redirect logged-in users away from auth pages
   if (isAuthRoute && user) {
-    const isAdmin = user.user_metadata?.role === 'admin'
+    const isAdmin = user.app_metadata?.role === 'admin'
     const locale = pathname.split('/')[1]
     return NextResponse.redirect(
       new URL(isAdmin ? `/${locale}/admin` : `/${locale}/perfil`, request.url)
