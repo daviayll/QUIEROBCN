@@ -16,7 +16,7 @@ export default async function AdminLayout({
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.user_metadata?.role !== 'admin') {
+  if (!user || user.app_metadata?.role !== 'admin') {
     redirect(`/${locale}/login`)
   }
 

@@ -14,6 +14,6 @@ export default async function HomePage({
     redirect(`/${locale}/login`)
   }
 
-  const isAdmin = user.user_metadata?.role === 'admin'
+  const isAdmin = user.app_metadata?.role === 'admin'
   redirect(isAdmin ? `/${locale}/admin` : `/${locale}/perfil`)
 }
