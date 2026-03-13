@@ -34,7 +34,7 @@ export default function AddSlotForm({ buildingId }: { buildingId: string }) {
           value={datetime}
           onChange={e => setDatetime(e.target.value)}
           required
-          className="w-52"
+          className="w-full sm:w-52"
         />
       </div>
       <div className="space-y-1.5">
@@ -46,7 +46,7 @@ export default function AddSlotForm({ buildingId }: { buildingId: string }) {
           max="60"
           value={duration}
           onChange={e => setDuration(e.target.value)}
-          className="w-24"
+          className="w-full sm:w-24"
         />
       </div>
       <Button type="submit" disabled={isPending || !datetime} variant="outline">

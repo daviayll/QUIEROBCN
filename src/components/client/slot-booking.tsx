@@ -113,7 +113,7 @@ export default function SlotBooking({
   return (
     <div className="space-y-2">
       {error && (
-        <p className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>
+        <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
       )}
       {slots.map(slot => {
         const dt = new Date(slot.datetime)
@@ -122,7 +122,7 @@ export default function SlotBooking({
             key={slot.id}
             onClick={() => handleBook(slot.id)}
             disabled={isPending}
-            className="w-full rounded-md border p-3 text-left transition-colors hover:bg-muted disabled:opacity-50"
+            className="w-full rounded-md border p-3 text-left transition-colors hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
             <div className="flex items-center justify-between gap-2">
               <div>

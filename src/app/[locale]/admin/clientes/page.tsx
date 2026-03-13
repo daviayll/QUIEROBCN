@@ -6,6 +6,7 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import type { ClientStatus } from '@/types'
 
 const profileLabels: Record<string, string> = {
@@ -65,7 +66,9 @@ export default async function ClientesPage({
       {/* Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <form className="flex-1">
+          <Label htmlFor="q" className="sr-only">Buscar clientes</Label>
           <Input
+            id="q"
             name="q"
             defaultValue={q}
             placeholder="Buscar por nombre o email…"

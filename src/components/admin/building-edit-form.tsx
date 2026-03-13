@@ -84,7 +84,7 @@ export default function BuildingEditForm({
   return (
     <form action={action} className="space-y-6">
       {state && !state.success && (
-        <div className="rounded-md border border-destructive/50 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {state.error}
         </div>
       )}
@@ -306,6 +306,8 @@ export default function BuildingEditForm({
       </Card>
 
       <div className="flex items-center justify-between">
+        <div className="space-y-1.5">
+          <Label htmlFor="status">Estado</Label>
         <Select name="status" defaultValue={building.status}>
           <SelectTrigger className="w-52">
             <SelectValue />
@@ -316,6 +318,7 @@ export default function BuildingEditForm({
             <SelectItem value="closed">Cerrado</SelectItem>
           </SelectContent>
         </Select>
+        </div>
         <Button type="submit" disabled={isPending}>
           <Save className="mr-1.5 h-4 w-4" />
           {isPending ? 'Guardando...' : 'Guardar cambios'}

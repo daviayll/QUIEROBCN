@@ -171,7 +171,7 @@ export function RegistroForm({ locale }: { locale: string }) {
 
             <div className="space-y-2">
               <Label>Barrios preferidos</Label>
-              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto rounded-md border p-3">
+              <div role="group" aria-label="Barrios preferidos" className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto rounded-md border p-3">
                 {BARCELONA_NEIGHBORHOODS.map(n => (
                   <div key={n} className="flex items-center gap-2">
                     <Checkbox
