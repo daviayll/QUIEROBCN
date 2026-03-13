@@ -13,6 +13,7 @@ export default function MatchTrigger({ buildingId }: { buildingId: string }) {
     startTransition(async () => {
       const res = await runMatchBuilding(buildingId)
       setResult({ count: res.count, error: res.error })
+      setTimeout(() => setResult(null), 5000)
     })
   }
 

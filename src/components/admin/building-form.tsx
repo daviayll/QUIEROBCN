@@ -41,7 +41,7 @@ export default function BuildingForm({ locale }: { locale: string }) {
   return (
     <form action={action} className="space-y-6">
       {state && !state.success && (
-        <div className="rounded-md border border-destructive/50 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {state.error}
         </div>
       )}
@@ -236,6 +236,8 @@ export default function BuildingForm({ locale }: { locale: string }) {
       </Card>
 
       <div className="flex items-center justify-between">
+        <div className="space-y-1.5">
+          <Label htmlFor="status">Estado</Label>
         <Select name="status" defaultValue="draft">
           <SelectTrigger className="w-52">
             <SelectValue />
@@ -245,6 +247,7 @@ export default function BuildingForm({ locale }: { locale: string }) {
             <SelectItem value="published">Publicar</SelectItem>
           </SelectContent>
         </Select>
+        </div>
         <Button type="submit" disabled={isPending}>
           {isPending ? 'Guardando...' : 'Crear piso'}
         </Button>

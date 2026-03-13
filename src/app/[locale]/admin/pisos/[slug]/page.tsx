@@ -115,11 +115,22 @@ export default async function BuildingDetailPage({
               Editar
             </Link>
           </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/${locale}/visita/${building.slug}`} target="_blank">
+          {building.status === 'published' ? (
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/${locale}/visita/${building.slug}`} target="_blank">
+                Ver página pública
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled
+              title="Publica el piso para ver la página pública"
+            >
               Ver página pública
-            </Link>
-          </Button>
+            </Button>
+          )}
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { MapPin, Home, Bath, Square, CalendarDays, Building2 } from 'lucide-react'
+import Image from 'next/image'
 import SlotBooking from '@/components/client/slot-booking'
 
 export default async function VisitaPublicPage({
@@ -81,8 +82,28 @@ export default async function VisitaPublicPage({
             </div>
           </div>
 
-          {/* Photos placeholder */}
-          {building.photos && building.photos.length === 0 && (
+          {/* Photos */}
+          {building.photos && building.photos.length > 0 ? (
+            <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              {building.photos.map((url, i) => (
+                <div
+                  key={url}
+                  className={`relative overflow-hidden rounded-xl ${
+                    i === 0 ? 'sm:col-span-2 sm:row-span-2 aspect-[4/3]' : 'aspect-[4/3]'
+                  }`}
+                >
+                  <Image
+                    src={url}
+                    alt={`${building.name} — foto ${i + 1}`}
+                    fill
+                    priority={i === 0}
+                    className="object-cover"
+                    sizes={i === 0 ? '(max-width: 640px) 100vw, 66vw' : '(max-width: 640px) 100vw, 33vw'}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
             <div className="flex h-48 items-center justify-center rounded-xl bg-muted">
               <Building2 className="h-12 w-12 text-muted-foreground/30" />
             </div>
@@ -180,10 +201,10 @@ function StatCard({
   value: string
 }) {
   return (
-    <div className="rounded-lg border bg-card p-3 text-center">
+    <div className="rounded-lg border bg-card p-4 text-center">
       <div className="flex justify-center mb-1">{icon}</div>
       <p className="text-lg font-bold">{value}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-sm text-muted-foreground">{label}</p>
     </div>
   )
 }

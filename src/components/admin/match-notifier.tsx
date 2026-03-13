@@ -62,6 +62,7 @@ export default function MatchNotifier({
       )
       setResult({ notified: res.notified, errors: res.errors })
       if (res.notified > 0) setSelectedIds(new Set())
+      setTimeout(() => setResult(null), 5000)
     })
   }
 
@@ -101,7 +102,7 @@ export default function MatchNotifier({
               tabIndex={0}
               onClick={() => !isPending && toggleSelect(m.id)}
               onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && !isPending) toggleSelect(m.id) }}
-              className={`w-full rounded-md border p-3 text-left transition-all cursor-pointer ${
+              className={`w-full rounded-md border p-3 text-left transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                 isSelected ? 'ring-2 ring-primary border-primary' : 'hover:bg-muted/50'
               } ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
@@ -109,7 +110,7 @@ export default function MatchNotifier({
                 <div>
                   <Link
                     href={`/${locale}/admin/clientes/${m.client?.id}`}
-                    className="text-sm font-medium hover:underline"
+                    className="truncate max-w-[200px] text-sm font-medium hover:underline"
                   >
                     {m.client?.full_name ?? '—'}
                   </Link>

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { logoutAction } from '@/actions/clients'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import MobileNav from '@/components/client/mobile-nav'
 
 const statusLabel: Record<string, string> = {
   unverified: 'Sin verificar',
@@ -53,6 +54,7 @@ export default async function ClientLayout({
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
           <div className="flex items-center gap-6">
+            <MobileNav navLinks={navLinks} />
             <Link href={`/${locale}/documentos`} className="font-display font-bold text-primary">
               QuieroBCN
             </Link>
@@ -70,7 +72,10 @@ export default async function ClientLayout({
           </div>
           <div className="flex items-center gap-3">
             {client && (
-              <Badge variant={statusVariant[client.status] ?? 'outline'}>
+              <Badge
+                variant={statusVariant[client.status] ?? 'outline'}
+                title={client.status === 'inactive' ? 'Tu perfil está pendiente de activación por la administradora' : undefined}
+              >
                 {statusLabel[client.status] ?? client.status}
               </Badge>
             )}

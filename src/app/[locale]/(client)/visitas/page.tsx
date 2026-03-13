@@ -143,6 +143,7 @@ export default async function VisitasPage({
               )
             })}
           </div>
+          <p className="mt-2 text-xs text-muted-foreground">Mostrando las últimas 5 visitas realizadas.</p>
         </section>
       )}
     </div>

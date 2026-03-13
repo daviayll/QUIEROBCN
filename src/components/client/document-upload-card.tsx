@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useTransition } from 'react'
-import { Upload, CheckCircle2, Clock, Trash2, Eye } from 'lucide-react'
+import { Upload, CheckCircle2, Clock, Trash2, Eye, Loader2 } from 'lucide-react'
 import { createBrowserClient } from '@supabase/ssr'
 import { recordDocumentUpload, deleteDocument, getDocumentSignedUrl } from '@/actions/documents'
 import { Button } from '@/components/ui/button'
@@ -116,9 +116,9 @@ export default function DocumentUploadCard({
             {hasDoc && (
               <p className="truncate text-xs text-muted-foreground">{existingDoc.file_name}</p>
             )}
-            {error && <p className="text-xs text-destructive">{error}</p>}
+            {error && <p className="text-sm text-destructive">{error}</p>}
             {uploading && (
-              <Progress value={uploadProgress} className="mt-1 h-1.5 w-32" />
+              <Progress value={uploadProgress} className="mt-1 h-1.5 w-32" aria-label="Progreso de subida" />
             )}
           </div>
         </div>
@@ -126,10 +126,10 @@ export default function DocumentUploadCard({
         <div className="flex shrink-0 items-center gap-1">
           {hasDoc && (
             <>
-              <Button variant="ghost" size="sm" onClick={handleView} disabled={isLoading}>
+              <Button variant="ghost" size="sm" onClick={handleView} disabled={isLoading} aria-label="Ver documento">
                 <Eye className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleDelete} disabled={isLoading}>
+              <Button variant="ghost" size="sm" onClick={handleDelete} disabled={isLoading} aria-label="Eliminar documento">
                 <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
             </>
@@ -140,8 +140,17 @@ export default function DocumentUploadCard({
             onClick={() => inputRef.current?.click()}
             disabled={isLoading}
           >
-            <Upload className="mr-1.5 h-4 w-4" />
-            {hasDoc ? 'Reemplazar' : 'Subir'}
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                Subiendo...
+              </>
+            ) : (
+              <>
+                <Upload className="mr-1.5 h-4 w-4" />
+                {hasDoc ? 'Reemplazar' : 'Subir'}
+              </>
+            )}
           </Button>
         </div>
       </CardContent>
